@@ -1,0 +1,7 @@
+Flask
+Flask-JWT
+Flask-RESTful
+Jinja2
+MarkupSafe
+PyJWT
+Werkzeug
