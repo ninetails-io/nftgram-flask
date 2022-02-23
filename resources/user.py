@@ -55,8 +55,12 @@ class User(Resource):
             except:
                 raise Exception("Could not add user to database")
 
-            return parser.parse_args(), 200
+            # user added successfully
+            return json.dumps({"username": un, "date_joined": dt}), 200
+
+        # handle any exceptions, returning an error message
         except Exception as e:
+            get_db().close()
             message = getattr(e, 'message', repr(e))
             # if dev or development return error message in JSON
             if (ENV[0.3].lower()) == "dev":
