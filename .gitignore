@@ -140,3 +140,8 @@ dmypy.json
 /dataSources/
 /dataSources.local.xml
 
+# Exclude the project's bin directory (created as part of virtual env)
+/BIT470-Flask/bin/
+
+# Exclude the project's database file
+/database/*.db
