@@ -8,16 +8,17 @@ from flask import current_app
 # STATIC HELPER FUNCTIONS
 
 
-def toDict(names, values):
-    if names == null or values == null or names.len = 0 or values.len = 0:
+def to_dict(names, values):
+    if names is None or values is None or len(names) == 0 or len(values) == 0:
         return dict()
     return dict(zip([c[0] for c in names], values))
 
-def toDictArray(result, rows):
-        array = []
-        for row in rows:
-            array.append(toDict(result.description, row))
-        return array
+
+def to_dict_array(result, rows):
+    array = []
+    for row in rows:
+        array.append(toDict(result.description, row))
+    return array
 
 
 def valid_username(user_name):

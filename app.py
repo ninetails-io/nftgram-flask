@@ -3,15 +3,19 @@
 # Adam Kohler
 # Stephen Gomez-Fox
 
+import os
 from flask import Flask
 from flask_restful import Resource, Api
 from os.path import exists
 from src.migrate_db import init_db
-from src.const import DB_NAME, DB_DIRECTORY
+from src.const import DB_FULLPATH
 from flask import g
 from resources.user import User, Users
 from resources.auth import Signup, Login
 import sqlite3
+
+if exists(DB_FULLPATH):
+    os.remove(DB_FULLPATH)
 
 app = Flask(__name__)
 app.config.from_object('src.config.DevelopmentConfig')
@@ -19,9 +23,9 @@ api = Api(app)
 
 # TODO: move the in-memory token store to the database
 
-
+print(DB_FULLPATH)
 # create and populate the database if the db file doesn't exist
-if not exists(DB_DIRECTORY + DB_NAME):
+if not exists(DB_FULLPATH):
     init_db()
 
 

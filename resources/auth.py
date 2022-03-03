@@ -2,12 +2,12 @@ from src.tools import valid_username, valid_password, encode_auth_token, decode_
 from datetime import datetime
 from flask import jsonify
 from flask_restful import Resource, reqparse
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import json
 from src.tools import valid_username, valid_password, encode_auth_token, decode_auth_token
 from src.db import get_db
-from src.const import ENV, SALT
-from src.tools import valid_username, valid_password
+import src.const
+from src.tools import valid_username, valid_password, to_dict, to_dict_array
 
 parser = reqparse.RequestParser()
 token_store = dict()
@@ -42,11 +42,12 @@ class Signup(Resource):
             uid = hash(un)
 
             # get the secure password hash
-            pw_hash = generate_password_hash(pw + SALT)
+            pw = generate_password_hash(pw)
+            print("Added user "+un+" pw="+pw)
             dt = datetime.utcnow()
 
             # attempt to insert the new user into the database
-            values = (uid, un, pw_hash, dt)
+            values = (uid, un, pw, dt)
             query = "INSERT INTO users(id, username, password, date_joined) VALUES (?,?,?,?)"
 
             # PERFORM THE INSERT
@@ -78,19 +79,14 @@ class Login(Resource):
         parser.add_argument('password')
         data = parser.parse_args()
 
-        un = str(data['username'])
-
+        # get record from the database
         query = 'SELECT * FROM users WHERE username=?'
-        result = get_db().cursor().execute(query, (un,))
-        user = dict(zip([c[0] for c in result.description], result.fetchone()))
+        result = get_db().cursor().execute(query, (data['username'],))
+        user = to_dict(result.description, result.fetchone())
 
-        pw = str(data['password'])
-        pw_hash = generate_password_hash(pw + SALT)
-        db_hash = user['password']
-
-        if db_hash == db_password:
-            token = encode_auth_token(un)
-            token_store[un] = token
+        if check_password_hash(user['password'], data['password']):
+            token = encode_auth_token(data['username'])
+            token_store[data['username']] = token
             return jsonify({"token": token.decode('utf-8')})
         else:
             get_db().close()
