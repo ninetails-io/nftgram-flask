@@ -2,12 +2,12 @@
 from os import environ, path
 import dotenv
 import src.const
-
-# enable retrieving secrets from environment
-basedir = path.abspath(path.dirname(__file__))
-print("basedir = " + basedir)
-dotenv.load_dotenv(path.join(basedir, '.env'))
-
+# # enable retrieving secrets from environment
+# basedir = const.APP_DIRECTORY
+#
+# print("basedir = " + basedir)
+# dotenv.load_dotenv(path.join(basedir, '/.env'))
+# print("dotenv = " + path.join(basedir, '/.env'))
 
 # Base config
 class Config:
@@ -19,7 +19,7 @@ class Config:
     SECRET_KEY = 'shhhhhh!'
 
     # SQLITE
-    DB_NAME = src.const.DB_NAME
+    DB_NAME = "nftgram.db"
 
     # JSONify
     JSONIFY_PRETTYPRINT_REGULAR = True
