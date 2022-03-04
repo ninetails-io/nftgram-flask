@@ -7,43 +7,42 @@ import os
 from flask import Flask
 from flask_restful import Resource, Api
 from os.path import exists
+import sqlite3
 from src.migrate_db import init_db
 from src.const import DB_FULLPATH
 from flask import g
 from resources.user import User, Users
 from resources.auth import Signup, Login
-import sqlite3
-
-if exists(DB_FULLPATH):
-    os.remove(DB_FULLPATH)
+from resources.blank import Blank, Blanks
+from src.tools import error_response
 
 app = Flask(__name__)
 app.config.from_object('src.config.DevelopmentConfig')
 api = Api(app)
 
-# TODO: move the in-memory token store to the database
+# in debug, the app runs twice automatically.
+# in this case, delete the database the first time
+if app.debug and os.environ.get("WERKZEUG_RUN_MAIN") == "false" and exists(DB_FULLPATH):
+    os.remove(DB_FULLPATH)
 
-print(DB_FULLPATH)
 # create and populate the database if the db file doesn't exist
 if not exists(DB_FULLPATH):
     init_db()
 
 
-# TODO: Replace with intended root get response
-class HelloWorld(Resource):
-    def get(self):
-        return {'hello': 'world'}
-
-
-
-
+# TODO: Determine if a root response is required
 
 # Associate resource paths with resource classes
-api.add_resource(HelloWorld, '/')
-api.add_resource(User, '/users/<string:user_name>')
-api.add_resource(Users, '/users')
+api.add_resource(User, '/user', '/user/<string:username>')
 api.add_resource(Signup, '/signup')
 api.add_resource(Login, '/login')
+api.add_resource(Blank, '/blank', '/blank/<int:id>')
+api.add_resource(Blanks, '/blanks')
+
+
+# @app.errorhandler(Exception)
+# def basic_error(e):
+#     return error_response("UNKNOWN_ERROR", "An unknown error has occurred"), 500
 
 
 # neatly exit in case of exception
