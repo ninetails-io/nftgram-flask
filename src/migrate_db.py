@@ -19,6 +19,7 @@ def init_db():
 
     # Get a cursor object needed to execute queries
     cur = con.cursor()
+    cur.execute('DROP TABLE IF EXISTS users')
     cur.execute('CREATE TABLE IF NOT EXISTS users(user_id text PRIMARY KEY, password text, date_joined Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)')
 
     # Parameterized SQL Query String for adding users
@@ -35,7 +36,7 @@ def init_db():
 
         try:
             cur.execute(query, values)
-            print("Success: Added user ", un, " pw="+pw)
+            print("Success: Added user ", id, " pw="+pw)
         except:
             print('Error: Unable to add user ', values)
 

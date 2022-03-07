@@ -21,15 +21,11 @@ app = Flask(__name__)
 app.config.from_object('src.config.DevelopmentConfig')
 api = Api(app)
 
-# in debug, the app runs twice automatically.
-# in this case, delete the database the first time
-if app.debug and os.environ.get("WERKZEUG_RUN_MAIN") == "false" and exists(DB_FULLPATH):
-    os.remove(DB_FULLPATH)
-
+# in debug, the app runs twice automatically only delete and re-create the database once
 # create and populate the database if the db file doesn't exist
-if not exists(DB_FULLPATH):
+if app.debug and os.environ.get("WERKZEUG_RUN_MAIN") == "true" and exists(DB_FULLPATH):
+    os.remove(DB_FULLPATH)
     init_db()
-
 
 # TODO: Determine if a root response is required
 

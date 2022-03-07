@@ -5,18 +5,18 @@ from datetime import datetime
 
 class User:
     # initialize class members to none
-    username = password = date_joined = None
+    user_id = password = date_joined = None
 
     # empty constructor
-    def __init__(self, username=None, password=None, date_joined=None):
-        self.username, self.password, self.date_joined \
-            = username, password, date_joined
+    def __init__(self, user_id=None, password=None, date_joined=None):
+        self.user_id, self.password, self.date_joined \
+            = user_id, password, date_joined
 
     # the below are convenience methods for converting entity to/from dictionaries
 
     def to_dict(self):
         return {
-            "usernmame": self.username,
+            "user_id": self.user_id,
             "password": self.password,
             "date_joined": self.date_joined
         }
@@ -24,9 +24,9 @@ class User:
     def from_dict(self, dictionary):
         if not (type(dictionary) is dict):
             raise "Requires dict as input"
-        if 'username' in dic and 'password' in dic and 'date_joined' in dic:
-            self.username, self.password, self.date_joined \
-                = username, password, date_joined
+        if 'user_id' in dic and 'password' in dic and 'date_joined' in dic:
+            self.user_id, self.password, self.date_joined \
+                = user_id, password, date_joined
         else:
             raise "Dictionary in UserEntity: missing required fields "
 
