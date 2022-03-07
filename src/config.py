@@ -1,6 +1,6 @@
 """ Flask configuration """
 from os import environ, path
-import dotenv
+#import dotenv
 import src.const
 # # enable retrieving secrets from environment
 # basedir = const.APP_DIRECTORY

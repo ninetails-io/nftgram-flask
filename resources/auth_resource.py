@@ -4,7 +4,7 @@ from flask import jsonify
 from flask_restful import Resource, reqparse
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
-from src.tools import valid_username, valid_password, encode_auth_token, decode_auth_token
+from src.tools import valid_username, valid_password, encode_auth_token, decode_auth_token, error_response
 from src.db import get_db
 import src.const
 from src.tools import valid_username, valid_password, to_dict, to_dict_array
@@ -13,57 +13,54 @@ parser = reqparse.RequestParser()
 token_store = dict()
 
 
-class Signup(Resource):
+class SignupResource(Resource):
     def post(self):
         try:
             # ARGUMENT PARSING
 
             # select the arguments to be parsed out of the request (JSON)
-            parser.add_argument('username')
+            parser.add_argument('user_id')
             parser.add_argument('password')
             data = parser.parse_args()
 
             # get the parsed argument values
-            un = str(data['username'])
-            pw = str(data['password'])
+            user_id = str(data['user_id'])
+            password= str(data['password'])
 
             # SANITY CHECKING
 
             # match returns null if the pattern is not matched
-            if not valid_username(un):
+            if not valid_username(user_id):
                 raise Exception("Username must begin with a letter and contain only letters, numbers, and underscore")
 
             # password must contain at least 4 characters
-            if not valid_password(pw):
+            if not valid_password(password):
                 raise Exception("Password does not meet requirements")
 
             # PREPARE TO INSERT INTO DATABASE
-            # user id is an integer hash of the username
-            uid = hash(un)
 
             # get the secure password hash
-            pw = generate_password_hash(pw)
-            print("Added user "+un+" pw="+pw)
+            password_hash = generate_password_hash(password)
             dt = datetime.utcnow()
 
             # attempt to insert the new user into the database
-            values = (uid, un, pw, dt)
-            query = "INSERT INTO users(id, username, password, date_joined) VALUES (?,?,?,?)"
+            values = (user_id, password_hash, dt)
+            query = "INSERT INTO users(user_id, password, date_joined) VALUES (?,?,?)"
 
             # PERFORM THE INSERT
             try:
                 get_db().cursor().execute(query, values)
                 get_db().commit()
                 get_db().close()
+                print("Added user " + user_id + " pw=" + password + "[" + password_hash + "]")
             except Exception as e:
                 print(e)
                 raise Exception("Could not add user to database")
 
             # CREATE AND RETURN NEW JWT TOKEN
-            token = encode_auth_token(un)
-
+            token = encode_auth_token(user_id)
             # store the new token in the token store and return it
-            token_store[un] = token
+            token_store[user_id] = token
             return jsonify({"token": token.decode('utf-8')})
 
         # ERROR HANDLING
@@ -72,22 +69,28 @@ class Signup(Resource):
             return 401
 
 
-class Login(Resource):
+class LoginResource(Resource):
     def post(self):
         # log in to an existing account and generate a new auth token for user
-        parser.add_argument('username')
+        parser.add_argument('user_id')
         parser.add_argument('password')
         data = parser.parse_args()
+        if not ('user_id' in data and 'password' in data):
+            return error_response('INVALID', 'Invalid request. userid and password required.', 400)
+        user_id = data['user_id']
+        password = data['password']
 
         # get record from the database
-        query = 'SELECT * FROM users WHERE username=?'
-        result = get_db().cursor().execute(query, (data['username'],))
+        query = 'SELECT * FROM users WHERE user_id=?'
+        result = get_db().cursor().execute(query, (user_id,))
         user = to_dict(result.description, result.fetchone())
+        if len(user)==0:
+            return error_response("NOT_FOUND", "The username and password combination provided was not found", 404)
 
-        if check_password_hash(user['password'], data['password']):
-            token = encode_auth_token(data['username'])
-            token_store[data['username']] = token
+        if check_password_hash(user['password'], password):
+            token = encode_auth_token(user_id)
+            token_store[user_id] = token
             return jsonify({"token": token.decode('utf-8')})
         else:
             get_db().close()
-            return 401
+            return error_response("NOT_FOUND", "The username and password combination provided was not found", 404)
