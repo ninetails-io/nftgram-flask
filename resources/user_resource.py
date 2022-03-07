@@ -15,7 +15,7 @@ parser = reqparse.RequestParser()
 
 # TODO: Move CRUD operations to functions
 
-class User(Resource):
+class UserResource(Resource):
     def get(self, username):
 
         # retrieves user from database and returns as flask response
@@ -112,7 +112,7 @@ class User(Resource):
 
 
 
-class Users(Resource):
+class UsersResource(Resource):
     def get(self):
 
         # TODO: Require valid auth token to retrieve users list
