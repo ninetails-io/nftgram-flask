@@ -19,20 +19,19 @@ def init_db():
 
     # Get a cursor object needed to execute queries
     cur = con.cursor()
-    cur.execute('CREATE TABLE IF NOT EXISTS users(id INTEGER NOT NULL, username text PRIMARY KEY, password text, date_joined Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)')
+    cur.execute('CREATE TABLE IF NOT EXISTS users(user_id text PRIMARY KEY, password text, date_joined Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)')
 
     # Parameterized SQL Query String for adding users
-    query = "INSERT OR IGNORE INTO users VALUES (?,?,?,?)"
+    query = "INSERT OR IGNORE INTO users VALUES (?,?,?)"
 
     # Insert users
     for user in DB_USERS:
 
         # get values to be inserted
-        id = hash(user[0])
-        un = user[0]
+        id = user[0]
         pw = generate_password_hash(user[1])
         dt = datetime.utcnow()
-        values = (id, un, pw, dt)
+        values = (id, pw, dt)
 
         try:
             cur.execute(query, values)

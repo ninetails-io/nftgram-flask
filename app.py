@@ -12,7 +12,7 @@ from src.migrate_db import init_db
 from src.const import DB_FULLPATH
 from flask import g
 from resources.user_resource import UserResource, UsersResource
-from resources.auth_resource import Signup, Login
+from resources.auth_resource import SignupResource, LoginResource
 from resources.blank_resource import BlankResource, BlanksResource
 from resources.test_resource import Test
 from src.tools import error_response

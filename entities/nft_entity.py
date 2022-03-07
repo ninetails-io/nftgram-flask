@@ -1,5 +1,5 @@
 
-class nft:
+class NFT:
 
     def __init__(self, nft_id=None, owner_id=None, nft_token=None, nft_url=None):
         self.nft_id, self.owner_id, self.nft_token, self.nft_url \

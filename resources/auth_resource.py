@@ -13,7 +13,7 @@ parser = reqparse.RequestParser()
 token_store = dict()
 
 
-class Signup(Resource):
+class SignupResource(Resource):
     def post(self):
         try:
             # ARGUMENT PARSING
@@ -24,31 +24,29 @@ class Signup(Resource):
             data = parser.parse_args()
 
             # get the parsed argument values
-            un = str(data['username'])
-            pw = str(data['password'])
+            user_id = str(data['username'])
+            password_text = str(data['password'])
 
             # SANITY CHECKING
 
             # match returns null if the pattern is not matched
-            if not valid_username(un):
+            if not valid_username(user_id):
                 raise Exception("Username must begin with a letter and contain only letters, numbers, and underscore")
 
             # password must contain at least 4 characters
-            if not valid_password(pw):
+            if not valid_password(password_text):
                 raise Exception("Password does not meet requirements")
 
             # PREPARE TO INSERT INTO DATABASE
-            # user id is an integer hash of the username
-            uid = hash(un)
 
             # get the secure password hash
-            pw = generate_password_hash(pw)
-            print("Added user "+un+" pw="+pw)
+            password_hash = generate_password_hash(password_text)
+            print("Added user "+user_id+" pw="+password_text)
             dt = datetime.utcnow()
 
             # attempt to insert the new user into the database
-            values = (uid, un, pw, dt)
-            query = "INSERT INTO users(id, username, password, date_joined) VALUES (?,?,?,?)"
+            values = (user_id, password_hash, dt)
+            query = "INSERT INTO users(user_id, password, date_joined) VALUES (?,?,?)"
 
             # PERFORM THE INSERT
             try:
@@ -60,10 +58,10 @@ class Signup(Resource):
                 raise Exception("Could not add user to database")
 
             # CREATE AND RETURN NEW JWT TOKEN
-            token = encode_auth_token(un)
-
+            token = encode_auth_token(user_id)
+            print(json.dumps(token, indent=4))
             # store the new token in the token store and return it
-            token_store[un] = token
+            token_store[user_id] = token
             return jsonify({"token": token.decode('utf-8')})
 
         # ERROR HANDLING
@@ -72,7 +70,7 @@ class Signup(Resource):
             return 401
 
 
-class Login(Resource):
+class LoginResource(Resource):
     def post(self):
         # log in to an existing account and generate a new auth token for user
         parser.add_argument('username')
@@ -80,13 +78,13 @@ class Login(Resource):
         data = parser.parse_args()
 
         # get record from the database
-        query = 'SELECT * FROM users WHERE username=?'
+        query = 'SELECT * FROM users WHERE user_id=?'
         result = get_db().cursor().execute(query, (data['username'],))
         user = to_dict(result.description, result.fetchone())
 
         if check_password_hash(user['password'], data['password']):
             token = encode_auth_token(data['username'])
-            token_store[data['username']] = token
+            token_store[data['user_id']] = token
             return jsonify({"token": token.decode('utf-8')})
         else:
             get_db().close()

@@ -9,8 +9,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from src.tools import to_dict, to_dict_array, decode_auth_token, error_response
 from src.db import get_db
 from src.const import ENV
-from entities.nft_entity import nft
-from entities.user_entity import user
+from entities.nft_entity import NFT
+from entities.user_entity import User
 
 # import a token store after implementation
 

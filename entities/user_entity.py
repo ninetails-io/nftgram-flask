@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 
-class UserEntity:
+class User:
     # initialize class members to none
     username = password = date_joined = None
 
