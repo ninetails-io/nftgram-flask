@@ -26,6 +26,7 @@ def get_user_id_from_token(token_hash):
         for k, v in tokens:
             if v.decode('utf-8') == token_hash:
                 print(k, ":", json.dumps(v))
+                return k
     except:
         print("Unknown error")
 
@@ -33,5 +34,5 @@ def create_token_for_user_id(user_id):
 
     token = encode_auth_token(user_id)
     token_store[data['username']] = token
-    return jsonify({"token": token.decode('utf-8')})
+    return token
 
