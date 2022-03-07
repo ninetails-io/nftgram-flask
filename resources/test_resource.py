@@ -1,33 +1,38 @@
 from datetime import datetime
+
 import json
 import uuid
 from flask import jsonify, make_response
 from flask_restful import Resource, reqparse
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from src.tools import to_dict, to_dict_array, decode_auth_token, error_response
 from src.db import get_db
 from src.const import ENV
+from entities.nft_entity import nft
+from entities.user_entity import user
 
 # import a token store after implementation
 
 parser = reqparse.RequestParser()
 
 
-class Blank(Resource):
+class Test(Resource):
 
-    def get(self, id=None):
+    def get(self, username=None):
         # Blank resource that takes and ID and returns an empty object
 
-        if id is None:
-            return error_response("BAD_REQUEST", "Missing id", 400)
+        if username is None:
+            return error_response("BAD_REQUEST", "Missing username", 400)
 
         try:
             # validate token
             # parameterize query and execute returning result, and close connection
             # put resulting payload into dict, jsonify and return
-            payload = to_dict()
-            return make_response(payload, 200)
+            user = UserEntity("bob", generate_password_hash("a1234"), datetime.utcnow())
+            # TODO: save "user" into the database
+
+            return make_response(user, 200)
         except:  # must be the last except clause
             return error_response("UNKNOWN_ERROR", "An unknown error has occurred", 500)
 
@@ -48,21 +53,3 @@ class Blank(Resource):
 
         # similar approach for PUT and DELETE, optionally PATCH
 
-
-class Blanks(Resource):
-    def get(self):
-        # Blank Resource array requires no parameters
-
-        try:
-            # validate token
-            # set query string, execute returning result, and close connection
-            # put resulting payload into array of dicts , jsonify and return
-            payload = to_dict_array()
-
-            # make_response does not work on arrays
-            return jsonify(payload)
-        # this must be the last except clause
-        except:
-            return error_response("UNKNOWN_ERROR", "An unknown error has occurred", 500)
-
-        # no other verbs for get all type resource
