@@ -10,7 +10,7 @@ from src.db import get_db
 import src.const
 from src.tools import valid_username, valid_password, to_dict, to_dict_array
 
-tokens = []
+tokens = {}
 
 
 # return the current valid tokan
@@ -48,7 +48,7 @@ def decode_auth_token(token):
     try:
         # decode the token using SECRET_KEY from config.py
         jwt_payload = jwt.decode(token, current_app.config.get('SECRET_KEY'))
-        user_id = jwt("sub")
+        user_id = jwt_payload["sub"]
         # did not trigger expired except, extend time with new token
         tokens[user_id] = encode_auth_token(user_id)
         return jwt_payload
@@ -61,14 +61,14 @@ def decode_auth_token(token):
 
 
 def get_token_from_header(req):
-    auth = req.headers.get('Authorization')
-    if auth is None: return None
-    token = auth[7, ]
+    authorization = req.headers.get('Authorization')
+    if authorization is None: return None
+    token = authorization[7: ]
+    print(token)
     return token
 
 
-def get_user_from_header(req):
-    token = get_token_from_header(req)
+def get_user_from_header(token):
     if token is None: return None
     return jwt_user_id(token)
 

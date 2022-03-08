@@ -14,7 +14,8 @@ from flask import g
 from resources.user_resource import UserResource, UsersResource
 from resources.auth_resource import SignupResource, LoginResource
 from resources.blank_resource import BlankResource, BlanksResource
-from resources.test_resource import Test
+from resources.test_resource import TestResource
+
 from src.tools import error_response
 
 app = Flask(__name__)
@@ -35,7 +36,8 @@ api.add_resource(SignupResource, '/signup')
 api.add_resource(LoginResource, '/login')
 api.add_resource(BlankResource, '/blank', '/blank/<int:id>')
 api.add_resource(BlanksResource, '/blanks')
-api.add_resource(Test,  '/')
+api.add_resource(TestResource, '/test')
+
 
 
 # @app.errorhandler(Exception)

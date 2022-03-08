@@ -1,55 +1,36 @@
 from datetime import datetime
-
-import json
-import uuid
-from flask import jsonify, make_response
+from flask import jsonify, request, make_response
+from flask_restful import Resource, reqparse
+from src.token_store import get_user_from_header, get_token_from_header, jwt_current_token
+from datetime import datetime
+from flask import jsonify, request, make_response
 from flask_restful import Resource, reqparse
 from werkzeug.security import generate_password_hash, check_password_hash
-
-from src.tools import to_dict, to_dict_array, decode_auth_token, error_response
+import json
+from src.tools import valid_username, valid_password, error_response
+from src.token_store import encode_auth_token, decode_auth_token
 from src.db import get_db
-from src.const import ENV
-from entities.nft_entity import NFT
-from entities.user_entity import User
+import src.const
+from src.tools import valid_username, valid_password, to_dict, to_dict_array
 
+parser = reqparse.RequestParser()
 # import a token store after implementation
 
 parser = reqparse.RequestParser()
 
 
-class Test(Resource):
+class TestResource(Resource):
 
-    def get(self, username=None):
-        # Blank resource that takes and ID and returns an empty object
+    # get root resource: returns currently logged-in user
+    def get(self):
+        auth_header = request.headers.get("Authorization")
+        tk = auth_header[7:]
 
-        if username is None:
-            return error_response("BAD_REQUEST", "Missing username", 400)
+        print(tk)
 
-        try:
-            # validate token
-            # parameterize query and execute returning result, and close connection
-            # put resulting payload into dict, jsonify and return
-            user = UserEntity("bob", generate_password_hash("a1234"), datetime.utcnow())
-            # TODO: save "user" into the database
+        user_id = get_user_from_header(tk)
+        new_tk = jwt_current_token(user_id)
 
-            return make_response(user, 200)
-        except:  # must be the last except clause
-            return error_response("UNKNOWN_ERROR", "An unknown error has occurred", 500)
-
-    def post(self):
-
-        try:
-            # add arguments from the post request and parse
-            # put the arguments into variables for convenience
-            # create an integer id using an appropriate method eg: id = int(uuid.uuid4())
-            # parameterize query and insert using a tuple (add extra comma to tuple if only one parameter)
-            # close the connection
-            # build payload dict from generated id and provided arguments, jsonify, and return
-            payload = to_dict()
-            return make_response(payload, 201)
-        # this must be the last except clause
-        except:
-            return error_response("UNKNOWN_ERROR", "An unknown error has occurred", 500)
-
-        # similar approach for PUT and DELETE, optionally PATCH
-
+        resp = make_response({"user_id": user_id, "token": new_tk.decode("utf-8")}, 200)
+        resp.headers.set("Authorization", "Bearer " + new_tk.decode("utf-8"))
+        return resp
