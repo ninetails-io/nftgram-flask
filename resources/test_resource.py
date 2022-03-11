@@ -4,7 +4,7 @@ from flask_restful import Resource, reqparse
 from werkzeug.security import generate_password_hash, check_password_hash
 from entities.user_entity import User
 from src.tools import to_dict, to_dict_array, error_response
-from token_store import jwt_current_token, jwt_user_from_request, jwt_token_from_request
+from src.token_store import jwt_current_token, jwt_user_from_request, jwt_token_from_request
 
 # import a token store after implementation
 
