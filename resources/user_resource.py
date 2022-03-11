@@ -1,14 +1,10 @@
-from datetime import datetime
 from flask_restful import Resource, reqparse
-from flask import jsonify, make_response
-import jwt
+from flask import make_response
 from werkzeug.security import generate_password_hash, check_password_hash
 from src.db import get_db
-import re
-import json
-from src.const import ENV
-from src.tools import to_dict, to_dict_array, error_response, db_response, db_response_array, valid_username, valid_password
-from collections import OrderedDict
+from entities.user_entity import User
+from src.tools import to_dict, to_dict_array, error_response, valid_username, valid_password
+
 
 # parser used by both User class and Users class
 parser = reqparse.RequestParser()
@@ -17,19 +13,19 @@ parser = reqparse.RequestParser()
 
 class UserResource(Resource):
     def get(self, username):
-
         # retrieves user from database and returns as flask response
+        user = dict()
+
         # TODO: Require valid auth token to view user data
         try:
-            query = 'SELECT * FROM users WHERE username=?'
+            query = 'SELECT * FROM users WHERE user_id=?'
             values = (username,)
-            result = get_db().cursor().execute(query, (username,))
+            result = get_db().cursor().execute(query, values)
             row = result.fetchone()
-
             user = to_dict(result.description, row)
-
-            # determine the password to be returned based on authorization
             password = "********"
+            # determine the password to be returned based on authorization
+
             # if admin, replace password with hashed value from db
             # if authorized password=row["password"]
             # TODO: authorization
@@ -37,7 +33,8 @@ class UserResource(Resource):
             # NOTE: dictionary results always alphanumeric. OrderedDict
             #       does not solve problem; once jsonified order is lost
             # TODO: look into flask templates for alternative way to control order of fields
-            result_dict = OrderedDict([("id", user["id"]), ("username", user['username']), ("password", password), ("date_joined", user["date_joined"])])
+            result_dict = {"user_id": user["user_id"], "password": password, "date_joined": user["date_joined"]}
+
             return make_response(result_dict, 200)
 
         except Exception as e:
@@ -101,7 +98,9 @@ class UserResource(Resource):
                 payload = {"id": uid, "username": un, "password": "********", "date_joined": dt}
 
                 # put and post return 201 on success
-                return make_response(payload, 201)
+                resp = make_response(payload, 201)
+                resp.headers["Authorization"] = "Bearer " + jwt_current_token(uid)
+                return resp
 
             except Exception as e:
                 return error_response("","Could not update the user record")
