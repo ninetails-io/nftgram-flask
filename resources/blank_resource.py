@@ -1,7 +1,7 @@
 from flask import jsonify, make_response
 from flask_restful import Resource, reqparse
-
 from src.tools import to_dict, to_dict_array, error_response
+
 
 
 # import a token store after implementation
