@@ -60,3 +60,5 @@ def close_connection(exception):
 # Run app.py if the current module being run is main.py
 if __name__ == '__main__':
     app.run(debug=True)
+
+#test commit
