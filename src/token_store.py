@@ -1,36 +1,26 @@
 from datetime import datetime, timedelta
 from flask import jsonify, current_app, request
-import json
+from flask_caching import Cache
 import jwt
+from resources import tokens
 
-# TODO: compare jwt, flask_jwt_extended (flask_jwt abandoned)
-
-from src.tools import valid_username, valid_password
-from src.db import get_db
-import src.const
-from src.tools import valid_username, valid_password, to_dict, to_dict_array
-
-tokens = []
+# TODO: compare jwt, flask_jwt_extended
 
 
-# return the current valid tokan
-# ALWAYS ADD THIS IN THE TO THE AUTHORIZATION HEADER OF ANY RESPONSE
 def jwt_current_token(user_id):
     try:
-        return tokens[user_id]
-    except:
-        print("Token does not exist for user ", user_id)
+        token = tokens.get(user_id)
+        return token
+    except Exception as e:
+        print(repr(e))
+        return None
 
 
-# decode a token and return the user id
-def jwt_user_id(token):
-    # errors handled in called function
-    decoded = decode_auth_token(token)
-    return decoded["sub"]
-
-
-def encode_auth_token(user_id):
+def jwt_encode_token(user_id):
     try:
+        jwt_payload_headers = {
+            "typ": "JWT",
+            "alg": "HS256"}
         jwt_payload = {
             "iss": "nftgram",
             "sub": user_id,
@@ -38,39 +28,53 @@ def encode_auth_token(user_id):
             'exp': datetime.utcnow() + timedelta(days=1),
             'iat': datetime.utcnow(),
         }
-        return jwt.encode(jwt_payload, current_app.config.get('SECRET_KEY'), algorithm='HS256')
+        token = jwt.encode(
+            jwt_payload,
+            current_app.config.get('SECRET_KEY'),
+            headers=jwt_payload_headers,
+            algorithm='HS256'
+        )
+        tokens.set(user_id, token)
+        return token
 
     except Exception as e:
-        return e
+        print(e.args)
+        raise e
 
 
-def decode_auth_token(token):
+def jwt_decode_token(token):
+    # decode the token using SECRET_KEY from config.py
+    key = current_app.config.get('SECRET_KEY')
+
+    # exceptions will pass back to caller
+    jwt_payload = jwt.decode(token, key, algorithms=['HS256'], issuer='nftgram', verify=True)
+    return jwt_payload
+
+
+def jwt_token_from_request(req):
     try:
-        # decode the token using SECRET_KEY from config.py
-        jwt_payload = jwt.decode(token, current_app.config.get('SECRET_KEY'))
-        user_id = jwt("sub")
-        # did not trigger expired except, extend time with new token
-        tokens[user_id] = encode_auth_token(user_id)
-        return jwt_payload
+        token = None
+        auth = req.headers.get('Authorization')
+        if auth is None: return None
+        if auth.startswith("Bearer "):
+            token = auth[7:]
+        return token
 
-    # TODO: handle actual errors
-    except jwt.ExpiredSignatureError:
-        return json.dumps({'error': 'Signature expired. Please log in again.'})
-    except jwt.InvalidTokenError:
-        return json.dumps({'error': 'Invalid token. Please log in again.'})
+    except Exception as e:
+        print(repr(e))
+        return None
 
 
-def get_token_from_header(req):
-    auth = req.headers.get('Authorization')
-    if auth is None: return None
-    token = auth[7,]
-    return token
+def jwt_user_from_request(req):
+    try:
+        token = jwt_token_from_request(req)
+        if token is None: return None
+        payload = jwt_decode_token(token)
+        user_id = payload["sub"]
+        if tokens.get(user_id) != token:
+            raise jwt.exceptions.InvalidTokenError
+        return user_id
 
-
-def get_user_from_header(req):
-    token = get_token_from_header(req)
-    if token is None: return None
-    return jwt_user_id(token)
-
-
-
+    except Exception as e:
+        print(repr(e))
+        return None

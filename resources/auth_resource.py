@@ -1,14 +1,11 @@
-from src.tools import valid_username, valid_password, encode_auth_token, decode_auth_token
+from src.tools import valid_username, valid_password
 from datetime import datetime
-from flask import jsonify, request
+from flask import make_response
 from flask_restful import Resource, reqparse
 from werkzeug.security import generate_password_hash, check_password_hash
-import json
-from src.tools import valid_username, valid_password, error_response
-from src.token_store import encode_auth_token, decode_auth_token
+from src.tools import valid_username, valid_password, error_response, to_dict, to_dict_array
+from src.token_store import jwt_encode_token, jwt_decode_token
 from src.db import get_db
-import src.const
-from src.tools import valid_username, valid_password, to_dict, to_dict_array
 
 parser = reqparse.RequestParser()
 token_store = dict()
@@ -60,9 +57,9 @@ class SignupResource(Resource):
 
             # CREATE AND RETURN NEW JWT TOKEN
             # create a new token in the token store and return it
-            token = encode_auth_token(user_id)
-            resp = make_response({"token": token.decode('utf-8')}, 200)
-            resp.headers["Authorization"] = "Bearer " + token.decode('utf-8')
+            token = jwt_encode_token(user_id)
+            resp = make_response({"token": token}, 200)
+            resp.headers['Authorization'] = "Bearer " + token
             return resp
 
         # ERROR HANDLING
@@ -91,9 +88,9 @@ class LoginResource(Resource):
 
         if check_password_hash(user['password'], password):
             # encode and store a new token in the token store
-            token = encode_auth_token(user_id)
-            resp = make_response({"token": token.decode('utf-8')}, 200)
-            resp.headers["Authorization"] = "Bearer " + token.decode('utf-8')
+            token = jwt_encode_token(user_id)
+            resp = make_response({"token": token}, 200)
+            resp.headers["Authorization"] = "Bearer " + token
             return resp
         else:
             get_db().close()
