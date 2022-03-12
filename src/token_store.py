@@ -25,7 +25,7 @@ def jwt_encode_token(user_id):
             "iss": "nftgram",
             "sub": user_id,
             "role": "user" if user_id != "admin" else "admin",
-            'exp': datetime.utcnow() + timedelta(days=1),
+            'exp': datetime.utcnow() + timedelta(minutes=60),
             'iat': datetime.utcnow(),
         }
         token = jwt.encode(
