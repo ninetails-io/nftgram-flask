@@ -7,20 +7,25 @@ import os
 from flask import Flask
 from flask_restful import Resource, Api
 from os.path import exists
-import sqlite3
 from src.migrate_db import init_db
 from src.const import DB_FULLPATH
 from flask import g
+from flask_caching import Cache
+import tempfile
+from resources import tokens
 from resources.user_resource import UserResource, UsersResource
 from resources.auth_resource import SignupResource, LoginResource
 from resources.blank_resource import BlankResource, BlanksResource
-from resources.test_resource import TestResource
+from resources.test_resource import Test
 
-from src.tools import error_response
+# create the token cache
 
 app = Flask(__name__)
 app.config.from_object('src.config.DevelopmentConfig')
 api = Api(app)
+
+# initialize the token cache
+tokens.init_app(app)
 
 # in debug, the app runs twice automatically only delete and re-create the database once
 # create and populate the database if the db file doesn't exist
@@ -36,8 +41,7 @@ api.add_resource(SignupResource, '/signup')
 api.add_resource(LoginResource, '/login')
 api.add_resource(BlankResource, '/blank', '/blank/<int:id>')
 api.add_resource(BlanksResource, '/blanks')
-api.add_resource(TestResource, '/test')
-
+api.add_resource(Test, '/test')
 
 
 # @app.errorhandler(Exception)
