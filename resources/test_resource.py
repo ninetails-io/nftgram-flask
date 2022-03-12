@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import request, make_response, Response
+from flask import request, make_response, Response, Request
 from flask_restful import Resource, reqparse
 from werkzeug.security import generate_password_hash, check_password_hash
 from entities.user_entity import User
