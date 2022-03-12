@@ -1,6 +1,3 @@
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
-
 
 class User:
     # initialize class members to none
@@ -30,5 +27,3 @@ class User:
             return self
         else:
             raise "Dictionary in UserEntity: missing required fields "
-
-
