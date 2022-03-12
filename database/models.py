@@ -1,4 +1,4 @@
-import sqlite3 as sqlite
+import sqlite3
 
 
 def create_profile(name_usr, profile_heading, profile_description, profile_pic_url):
@@ -19,8 +19,8 @@ def get_nfts():
     con = sqlite3.connect('schema.sql')
     cur = con.cursor()
     cur.execute('SELECT * FROM NFT')
-    NFT = cur.fetchall()
-    return NFT
+    NFTs = cur.fetchall()
+    return NFTs
 
 def create_post(post_id, user_id, title, descript, posted_at, nft_id):
     con = sqlite3.connect('schema.sql')
@@ -33,27 +33,27 @@ def get_posts():
     con = sqlite3.connect('schema.sql')
     cur = con.cursor()
     cur.execute('SELECT * FROM Post')
-    NFT = cur.fetchall()
-    return Post
+    NFTposts = cur.fetchall()
+    return NFTposts
 
 def create_reply(reply_id, user_id, post_id, replied_at, reply_text):
     con = sqlite3.connect('schema.sql')
     cur = con.cursor()
-    cur.execute('INSERT OR IGNORE INTO Reply (reply_id, user_id, post_id, replied_at, reply_text)) values(?,?,?,?,?)', (reply_id, user_id, post_id, replied_at, reply_text)))
+    cur.execute('INSERT OR IGNORE INTO Reply (reply_id, user_id, post_id, replied_at, reply_text)) values(?,?,?,?,?)', (reply_id, user_id, post_id, replied_at, reply_text))
     con.commit()
     con.close()
 
-def get_posts():
+def get_replies():
     con = sqlite3.connect('schema.sql')
     cur = con.cursor()
     cur.execute('SELECT * FROM Reply')
-    NFT = cur.fetchall()
-    return Reply
+    NFTreplies = cur.fetchall()
+    return NFTreplies
    
 def create_follows(user_id, follows_id):
     con = sqlite3.connect('schema.sql')
     cur = con.cursor()
-    cur.execute('INSERT OR IGNORE INTO Follows (user_id, follows_id)) values(?,?)', (user_id, follows_id)))
+    cur.execute('INSERT OR IGNORE INTO Follows (user_id, follows_id)) values(?,?)', (user_id, follows_id))
     con.commit()
     con.close()
 
@@ -61,19 +61,19 @@ def get_followers():
     con = sqlite3.connect('schema.sql')
     cur = con.cursor()
     cur.execute('SELECT * FROM Follows')
-    NFT = cur.fetchall()
-    return Follows
+    followers = cur.fetchall()
+    return followers
 
 def create_user(user_id, password_usr, date_joined, roles, last_login):
     con = sqlite3.connect('schema.sql')
     cur = con.cursor()
-    cur.execute('INSERT OR IGNORE INTO User (user_id, password_usr, date_joined, roles, last_login)) values(?,?,?,?,?)', (user_id, password_usr, date_joined, roles, last_login)))
+    cur.execute('INSERT OR IGNORE INTO User (user_id, password_usr, date_joined, roles, last_login)) values(?,?,?,?,?)', (user_id, password_usr, date_joined, roles, last_login))
     con.commit()
     con.close()
 
 def get_users():
     con = sqlite3.connect('schema.sql')
     cur = con.cursor()
-    cur.execute('SELECT * FROM Follows')
-    NFT = cur.fetchall()
-    return Follows
+    cur.execute('SELECT * FROM Users')
+    users = cur.fetchall()
+    return users
